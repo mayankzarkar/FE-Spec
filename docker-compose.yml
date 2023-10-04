@@ -1,0 +1,52 @@
+version: '3'
+
+volumes:
+  mysql_data:
+  mysql_data_test:
+
+networks:
+  php_course:
+
+services:
+  web:
+    build:
+      context: .
+    ports:
+      - 80:80
+    volumes:
+      - .:/var/www/html
+      - ./apache/conf/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
+      - ./apache/php/php.ini:/usr/local/etc/php/php.ini
+
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - php_course
+
+  db:
+    image: mysql:5.7
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql:/scripts
+    environment:
+      - MYSQL_DATABASE=${DEV_MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${DEV_MYSQL_ROOT_PASSWORD}
+    networks:
+      - php_course
+    restart: always
+
+
+  db_test:
+    image: mysql:5.7
+    volumes:
+      - mysql_data_test:/var/lib/mysql
+      - ./mysql:/scripts
+    environment:
+      - MYSQL_DATABASE=${TEST_MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${TEST_MYSQL_ROOT_PASSWORD}
+    networks:
+      - php_course
+    restart: always
